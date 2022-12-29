@@ -4,7 +4,10 @@ import org.example.exceptions.QueueUnderflowException;
 
 import java.util.Arrays;
 
-public class Queue extends AbstractQueue {
+public class Queue {
+
+    Integer[] data = new Integer[10];
+    Integer tail = -1;
 
     public void add(Integer element) {
         if (isFull()) {
