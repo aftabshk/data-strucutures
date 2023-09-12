@@ -19,7 +19,7 @@ public class Deque extends Queue {
         ++tail;
     }
 
-    public Integer removeLast() throws QueueUnderflowException {
+    public Object removeLast() throws QueueUnderflowException {
         if (isEmpty()) {
             throw new QueueUnderflowException();
         }
@@ -34,8 +34,10 @@ public class Deque extends Queue {
             deque.add(i * 10);
         }
         deque.addFirst(-1);
+        deque.add(30);
+        deque.remove();
         deque.removeLast();
         deque.removeLast();
-        System.out.println(deque);
+        System.out.println(deque.size());
     }
 }

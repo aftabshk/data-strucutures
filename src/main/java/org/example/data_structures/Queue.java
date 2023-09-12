@@ -2,14 +2,15 @@ package org.example.data_structures;
 
 import org.example.exceptions.QueueUnderflowException;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class Queue {
+public class Queue <T> {
 
-    Integer[] data = new Integer[10];
+    T[] data = (T[]) Array.newInstance(java.lang.Object.class, 10);
     Integer tail = -1;
 
-    public void add(Integer element) {
+    public void add(T element) {
         if (isFull()) {
             data = Arrays.copyOf(data, this.data.length + 11);
         }
@@ -17,12 +18,12 @@ public class Queue {
         this.data[++tail] = element;
     }
 
-    public Integer remove() throws QueueUnderflowException {
+    public T remove() throws QueueUnderflowException {
         if (isEmpty()) {
             throw new QueueUnderflowException();
         }
 
-        Integer result = this.data[0];
+        T result = this.data[0];
 
         for (int i = 0; i < tail; i++) {
             this.data[i] = this.data[i + 1];
