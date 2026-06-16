@@ -4,30 +4,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Graph {
+public class Graph<T> {
 
-    private Node node;
+    private final Node<T> node;
 
-    public Graph(Node node) {
+    public Graph(Node<T> node) {
         this.node = node;
     }
 
-    public LinkedList<String> dfs(String goal) {
+    public LinkedList<T> dfs(String goal) {
         return dfs(this.node, goal, new LinkedList<>(), new ArrayList<>());
     }
 
-    private LinkedList<String> dfs(Node currentNode, String goal, LinkedList<String> path, List<Node> exploredNodes) {
+    private LinkedList<T> dfs(Node<T> currentNode, String goal, LinkedList<T> path, List<Node<T>> exploredNodes) {
         if (isGoal(currentNode, goal)) {
             path.appendFirst(currentNode.getData());
             return path;
         }
         exploredNodes.add(currentNode);
 
-        List<Node> children = currentNode.getChildren();
+        List<Node<T>> children = currentNode.getChildren();
 
-        for (Node child : children) {
+        for (Node<T> child : children) {
             if (!isExploredNode(exploredNodes, child)) {
-                LinkedList<String> resultPath = dfs(child, goal, path, exploredNodes);
+                LinkedList<T> resultPath = dfs(child, goal, path, exploredNodes);
 
                 if (!resultPath.isEmpty()) {
                     path.appendFirst(currentNode.getData());
@@ -39,42 +39,42 @@ public class Graph {
         return new LinkedList<>();
     }
 
-    private static boolean isGoal(Node currentNode, String goal) {
+    private boolean isGoal(Node<T> currentNode, String goal) {
         return currentNode.getData().equals(goal);
     }
 
-    private static boolean isExploredNode(List<Node> exploredNodes, Node currentNode) {
+    private boolean isExploredNode(List<Node<T>> exploredNodes, Node currentNode) {
         return exploredNodes.stream().anyMatch(n -> currentNode.getData().equals(n.getData()));
     }
 
-    public static class Node {
+    public static class Node<T> {
 
-        private String data;
-        private List<Node> children;
+        private T data;
+        private List<Node<T>> children;
 
-        public Node(String data) {
+        public Node(T data) {
             this.data = data;
             this.children = List.of();
         }
 
-        public Node(String data, List<Node> children) {
+        public Node(T data, List<Node<T>> children) {
             this.data = data;
             this.children = children;
         }
 
-        public String getData() {
+        public T getData() {
             return data;
         }
 
-        public void setData(String data) {
+        public void setData(T data) {
             this.data = data;
         }
 
-        public List<Node> getChildren() {
+        public List<Node<T>> getChildren() {
             return children;
         }
 
-        public void setChildren(List<Node> children) {
+        public void setChildren(List<Node<T>> children) {
             this.children = children;
         }
 
@@ -109,17 +109,17 @@ public class Graph {
 //        System.out.println(path);
 
         /* Cycle Test1 */
-        Graph.Node terminalNodeD = new Graph.Node("D");
-        Graph.Node terminalNodeF = new Graph.Node("F");
-        Graph.Node terminalNodeE = new Graph.Node("E");
-        Graph.Node terminalNodeG = new Graph.Node("G");
-        Graph.Node nodeB = new Graph.Node("B", List.of(terminalNodeD));
-        Graph.Node nodeC = new Graph.Node("C", List.of(terminalNodeF, terminalNodeE, terminalNodeG));
-        Graph.Node nodeA = new Graph.Node("A", new ArrayList<>());
+        Graph.Node<String> terminalNodeD = new Graph.Node<>("D");
+        Graph.Node<String> terminalNodeF = new Graph.Node<>("F");
+        Graph.Node<String> terminalNodeE = new Graph.Node<>("E");
+        Graph.Node<String> terminalNodeG = new Graph.Node<>("G");
+        Graph.Node<String> nodeB = new Graph.Node<>("B", List.of(terminalNodeD));
+        Graph.Node<String> nodeC = new Graph.Node<>("C", List.of(terminalNodeF, terminalNodeE, terminalNodeG));
+        Graph.Node<String> nodeA = new Graph.Node<>("A", new ArrayList<>());
         nodeA.getChildren().add(nodeA);
         nodeA.getChildren().add(nodeB);
         nodeA.getChildren().add(nodeC);
-        Graph graph = new Graph(nodeA);
+        Graph<String> graph = new Graph<>(nodeA);
 
         LinkedList<String> path = graph.dfs("G");
 
