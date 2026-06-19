@@ -1,22 +1,32 @@
 package org.example.data_structures;
 
+import org.example.exceptions.QueueUnderflowException;
+import org.example.maze_reader.Coordinates;
+import org.example.maze_reader.MazeCube;
+import org.example.maze_reader.MazeReader;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Graph<T> {
 
-    private final Node<T> node;
+    private Node<T> node;
 
     public Graph(Node<T> node) {
         this.node = node;
     }
 
-    public LinkedList<T> dfs(String goal) {
+    public void setNode(Node<T> node) {
+        this.node = node;
+    }
+
+    public LinkedList<T> dfs(T goal) {
         return dfs(this.node, goal, new LinkedList<>(), new ArrayList<>());
     }
 
-    private LinkedList<T> dfs(Node<T> currentNode, String goal, LinkedList<T> path, List<Node<T>> exploredNodes) {
+    private LinkedList<T> dfs(Node<T> currentNode, T goal, LinkedList<T> path, List<Node<T>> exploredNodes) {
         if (isGoal(currentNode, goal)) {
             path.appendFirst(currentNode.getData());
             return path;
@@ -39,7 +49,7 @@ public class Graph<T> {
         return new LinkedList<>();
     }
 
-    private boolean isGoal(Node<T> currentNode, String goal) {
+    private boolean isGoal(Node<T> currentNode, T goal) {
         return currentNode.getData().equals(goal);
     }
 
@@ -47,7 +57,7 @@ public class Graph<T> {
         return exploredNodes.stream().anyMatch(n -> currentNode.getData().equals(n.getData()));
     }
 
-    public static class Node<T> {
+    public static class Node<T extends Object> {
 
         private T data;
         private List<Node<T>> children;
@@ -90,9 +100,17 @@ public class Graph<T> {
         public int hashCode() {
             return Objects.hash(data);
         }
+
+        @Override
+        public String toString() {
+            return "Node{" +
+                    "data=" + data +
+                    '}';
+        }
     }
 
-    public static void main(String[] args) {
+    //  Run DFS
+    public static void main1(String[] args) {
 
         /*** Normal Test1 */
 //        Graph.Node terminalNodeD = new Graph.Node("D");
@@ -124,6 +142,19 @@ public class Graph<T> {
         LinkedList<String> path = graph.dfs("G");
 
         System.out.println(path);
+    }
 
+    //  Solve Maze with DFS
+    public static void main2(String[] args) throws IOException, QueueUnderflowException {
+        Graph<MazeCube> mazeCubeGraph = MazeReader.readMazeBFS("/Users/aftab.shaikh/personal/data-strucutures/src/main/resources/maze/maze1.txt");
+
+        System.out.println(mazeCubeGraph.dfs(new MazeCube("B", new Coordinates(4, 4))));
+    }
+
+    //  Solve Maze with GFS
+    public static void main(String[] args) throws IOException, QueueUnderflowException {
+        Graph<MazeCube> mazeCubeGraph = MazeReader.readMazeBFS("/Users/aftab.shaikh/personal/data-strucutures/src/main/resources/maze/maze1.txt");
+
+//        System.out.println(mazeCubeGraph.dfs(new MazeCube("B", new Coordinates(4, 4))));
     }
 }
