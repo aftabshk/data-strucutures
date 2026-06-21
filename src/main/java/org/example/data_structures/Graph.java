@@ -1,11 +1,7 @@
 package org.example.data_structures;
 
-import org.example.exceptions.QueueUnderflowException;
-import org.example.maze_reader.Coordinates;
-import org.example.maze_reader.MazeCube;
-import org.example.maze_reader.MazeReader;
+import org.example.functional_interfaces.HeuristicFunction;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,6 +16,10 @@ public class Graph<T> {
 
     public void setNode(Node<T> node) {
         this.node = node;
+    }
+
+    public Node<T> getNode() {
+        return node;
     }
 
     public LinkedList<T> dfs(T goal) {
@@ -49,6 +49,56 @@ public class Graph<T> {
         return new LinkedList<>();
     }
 
+    public LinkedList<T> gfs(T goal, HeuristicFunction<T> heuristicFunction) {
+        List<Node<T>> cachedNodes = new ArrayList<>();
+        cachedNodes.add(this.node);
+        return gfs(this.node, goal, heuristicFunction, new LinkedList<>(), new ArrayList<>(), cachedNodes);
+    }
+
+    public LinkedList<T> gfs(Node<T> currentNode,
+                             T goal,
+                             HeuristicFunction<T> heuristicFunction,
+                             LinkedList<T> path,
+                             List<Node<T>> exploredNodes,
+                             List<Node<T>> cachedNodes
+    ) {
+        if (isGoal(currentNode, goal)) {
+            path.appendFirst(currentNode.getData());
+            return path;
+        }
+
+        if (cachedNodes.isEmpty()) return null;
+
+        List<Node<T>> notExploredNodes = currentNode.getChildren().stream().filter(n -> !isExploredNode(exploredNodes, n)).toList();
+        cachedNodes.addAll(notExploredNodes);
+
+        Integer distance = Integer.MAX_VALUE;
+        int minDistanceIndex = -1;
+        for (int i = cachedNodes.size() - 1; i >= 0; i--) {
+            Node<T> tNode = cachedNodes.get(i);
+
+            Integer currentDistance = heuristicFunction.estimate(goal, tNode.getData());
+
+            if (currentDistance < distance) {
+                minDistanceIndex = i;
+                distance = currentDistance;
+            }
+        }
+
+        Node<T> nextNode = cachedNodes.remove(minDistanceIndex);
+
+        exploredNodes.add(nextNode);
+
+        LinkedList<T> resultPath = gfs(nextNode, goal, heuristicFunction, path, exploredNodes, cachedNodes);
+
+        if (!resultPath.isEmpty()) {
+            resultPath.appendFirst(currentNode.getData());
+            return resultPath;
+        }
+
+        return new LinkedList<>();
+    }
+
     private boolean isGoal(Node<T> currentNode, T goal) {
         return currentNode.getData().equals(goal);
     }
@@ -64,7 +114,7 @@ public class Graph<T> {
 
         public Node(T data) {
             this.data = data;
-            this.children = List.of();
+            this.children = new ArrayList<>();
         }
 
         public Node(T data, List<Node<T>> children) {
@@ -107,54 +157,5 @@ public class Graph<T> {
                     "data=" + data +
                     '}';
         }
-    }
-
-    //  Run DFS
-    public static void main1(String[] args) {
-
-        /*** Normal Test1 */
-//        Graph.Node terminalNodeD = new Graph.Node("D");
-//        Graph.Node terminalNodeF = new Graph.Node("F");
-//        Graph.Node terminalNodeE = new Graph.Node("E");
-//        Graph.Node terminalNodeG = new Graph.Node("G");
-//        Graph.Node nodeB = new Graph.Node("B", List.of(terminalNodeD));
-//        Graph.Node nodeC = new Graph.Node("C", List.of(terminalNodeF, terminalNodeE, terminalNodeG));
-//        Graph.Node nodeA = new Graph.Node("A", List.of(nodeB, nodeC));
-//        Graph graph = new Graph(nodeA);
-//
-//        List<String> path = graph.dfs("G");
-//
-//        System.out.println(path);
-
-        /* Cycle Test1 */
-        Graph.Node<String> terminalNodeD = new Graph.Node<>("D");
-        Graph.Node<String> terminalNodeF = new Graph.Node<>("F");
-        Graph.Node<String> terminalNodeE = new Graph.Node<>("E");
-        Graph.Node<String> terminalNodeG = new Graph.Node<>("G");
-        Graph.Node<String> nodeB = new Graph.Node<>("B", List.of(terminalNodeD));
-        Graph.Node<String> nodeC = new Graph.Node<>("C", List.of(terminalNodeF, terminalNodeE, terminalNodeG));
-        Graph.Node<String> nodeA = new Graph.Node<>("A", new ArrayList<>());
-        nodeA.getChildren().add(nodeA);
-        nodeA.getChildren().add(nodeB);
-        nodeA.getChildren().add(nodeC);
-        Graph<String> graph = new Graph<>(nodeA);
-
-        LinkedList<String> path = graph.dfs("G");
-
-        System.out.println(path);
-    }
-
-    //  Solve Maze with DFS
-    public static void main2(String[] args) throws IOException, QueueUnderflowException {
-        Graph<MazeCube> mazeCubeGraph = MazeReader.readMazeBFS("/Users/aftab.shaikh/personal/data-strucutures/src/main/resources/maze/maze1.txt");
-
-        System.out.println(mazeCubeGraph.dfs(new MazeCube("B", new Coordinates(4, 4))));
-    }
-
-    //  Solve Maze with GFS
-    public static void main(String[] args) throws IOException, QueueUnderflowException {
-        Graph<MazeCube> mazeCubeGraph = MazeReader.readMazeBFS("/Users/aftab.shaikh/personal/data-strucutures/src/main/resources/maze/maze1.txt");
-
-//        System.out.println(mazeCubeGraph.dfs(new MazeCube("B", new Coordinates(4, 4))));
     }
 }

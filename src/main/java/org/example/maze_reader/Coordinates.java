@@ -16,16 +16,16 @@ public class Coordinates {
     public List<Coordinates> getNeighbours(Coordinates upperBound) {
         List<Coordinates> result = new ArrayList<>();
 
-        if (this.x + 1 <= upperBound.getX()) {
+        if ((this.x + 1) <= upperBound.getX()) {
             result.add(new Coordinates(this.x + 1, this.y));
         }
-        if (this.y + 1 <= upperBound.getY()) {
+        if ((this.y + 1) <= upperBound.getY()) {
             result.add(new Coordinates(this.x, this.y + 1));
         }
-        if (this.x - 1 >= 0) {
+        if ((this.x - 1) >= 0) {
             result.add(new Coordinates(this.x - 1, this.y));
         }
-        if (this.y - 1 >= 0) {
+        if ((this.y - 1) >= 0) {
             result.add(new Coordinates(this.x, this.y - 1));
         }
 

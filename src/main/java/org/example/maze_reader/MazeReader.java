@@ -6,10 +6,7 @@ import org.example.exceptions.QueueUnderflowException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class MazeReader {
 
@@ -26,10 +23,11 @@ public class MazeReader {
     }
 
     public static Graph<MazeCube> getMazeBFS(List<List<String>> list) throws QueueUnderflowException {
-        MazeCube firstNode = new MazeCube(list.get(0).get(0), new Coordinates(0, 0));
+        MazeCube mazeCube = new MazeCube(list.get(0).get(0), new Coordinates(0, 0));
         Queue<Graph.Node<MazeCube>> queueFrontier = new Queue<>();
-        queueFrontier.add(new Graph.Node<>(firstNode));
-        return getMazeBFS(new Graph<>(new Graph.Node<>(firstNode)),
+        Graph.Node<MazeCube> firstNode = new Graph.Node<>(mazeCube);
+        queueFrontier.add(firstNode);
+        return getMazeBFS(new Graph<>(firstNode),
                 list,
                 queueFrontier,
                 new ArrayList<>(),
@@ -44,32 +42,40 @@ public class MazeReader {
         if (queue.isEmpty()) return graph;
 
         Graph.Node<MazeCube> node = queue.remove();
+        System.out.printf("-------------------> Visiting Node %s <---------------------\n", node);
+        System.out.printf("-------------------> It's children b4 visiting %s <---------------------\n", node.getChildren());
+        visitedNodes.add(node);
 
+        List<MazeCube> neighbours = node.getData().getNeighbours(upperBound);
+        neighbours.forEach(neighbour -> {
+            String value = list.get(neighbour.getCoordinates().getY()).get(neighbour.getCoordinates().getX());
+            neighbour.setValue(value);
+        });
+        List<Graph.Node<MazeCube>> children = neighbours
+                .stream()
+                .filter(neighbour -> !neighbour.getValue().equals("#"))
+                .map(Graph.Node::new)
+                .toList();
 
-        if (visitedNodes.stream().noneMatch(node::equals)) {
-            if (Objects.equals(node.getData().getValue(), "A")) {
-                graph.setNode(node);
-            }
-
-            visitedNodes.add(node);
-
-            List<MazeCube> neighbours = node.getData().getNeighbours(upperBound);
-
-            neighbours.forEach(neighbour -> {
-                String value = list.get(neighbour.getCoordinates().getY()).get(neighbour.getCoordinates().getX());
-                neighbour.setValue(value);
-            });
-
-            List<Graph.Node<MazeCube>> children = neighbours.stream()
-                    .filter(neighbour -> !neighbour.getValue().equals("#"))
-                    .map(Graph.Node::new)
-                    .toList();
-
-            node.setChildren(children);
-            children.forEach(queue::add);
-
-            return getMazeBFS(graph, list, queue, visitedNodes, upperBound);
+        System.out.printf("It's found children are %s\n", children);
+        System.out.printf("Visited nodes are %s\n", visitedNodes);
+        for (Graph.Node<MazeCube> child : children) {
+            visitedNodes
+                    .stream()
+                    .filter(visitedNode -> visitedNode.equals(child))
+                    .findFirst()
+                    .ifPresentOrElse((visitedChild) -> {
+                        System.out.printf("Visited child %s Not adding to queue\n", visitedChild);
+                        node.getChildren().add(visitedChild);
+                    }, () -> {
+                        System.out.printf("Not a Visited child %s Adding to queue\n", child);
+                        queue.add(child);
+                        node.getChildren().add(child);
+                    });
         }
+        System.out.printf("Queue %s\n", queue);
+        System.out.printf("-------------------> Visited Node %s <---------------------\n", node);
+        System.out.printf("-------------------> It's children %s <---------------------\n", node.getChildren());
 
         return getMazeBFS(graph, list, queue, visitedNodes, upperBound);
     }
